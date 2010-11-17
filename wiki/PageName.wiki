@@ -1,13 +1,9 @@
-#summary One-sentence summary of this page.
-
 = Introduction =
 
-minikermit is a linux terminal program for interaction with diverse microcontroller board.
+Minikermit is a linux terminal program for interaction with diverse microcontroller board.
 
+Connect your board over a serial communication line with your linux pc and start the compiled c++ program minikermit in a shell.
+Minikermit waits for key pressed at pc keypad and sends the ascii code over the serial line to the controller board. The controller board sends characters to the pc and minikermit displays the character at the console window.
+Two chars pressed at keypad have special meanning. "q" terminated minikermit and "w" 
 
-= Details =
-
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+Compiling
