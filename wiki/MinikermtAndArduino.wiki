@@ -1,0 +1,3 @@
+Arduino boards are equipped with a minimal monitor program. There are diverse variants of arduino boards (and bootloaders) and I am not a specialist for this topic (correct me, if somewhat is wrong here).<br>
+I'm only writing about the boards arduino duemilanove and arduinoMega.<br>
+I think, the explanations 
