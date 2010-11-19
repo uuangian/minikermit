@@ -1,4 +1,4 @@
-Minikermit is a linux terminal program especially for communication with microcontroller development boards.<br><br>
+Minikermit is a linux terminal program especially for communication with microcontroller development boards with monitors (minimal operating systems).<br><br>
 *How it works* <br>
 Connect the development board over a serial communication line with your pc and start minikermit in your shell. Minikermit then waits for key pressed at pc keypad and sends the character over serial line to the development board. Characters, which the development board sends over serial line, are displayed in the minikermit terminal window.<br>
 Minikermit terminates, if you press 'q' or 'Q' at keypad. If you press 'w', minikermit
@@ -24,13 +24,23 @@ For USB/ACM ports sometimes you have awhile "skeletons in the closet" if you res
 //#define BAUDRATE	B38400<br>
 #define BAUDRATE 	B57600<br>
 //#define BAUDRATE	B115200<br>
-<br>
-// select your target processor or better your board 
-//#define AVR	 // diverse atmega, xmega, UC3, AP7000 working in cooperation with bamo128 or bamo32 (code.google.com/p/bamo128; cs.ba-berlin.de)
-		// or any processor with bajos and minikermit
-#define ARDUINOBOOTLOADER	// any (avr) arduino board with arduino bootloader
-//#define CPU68HC11		// 68HC11 development board with monitor 
-//#define CPUZ80		// the Z80 development board z80mini with monitor
+<br><br>
+Minikermit works with many development boards and monitor programs. It is prepared for cooperation with:<br>
+- diverse avr8 and avr32 controllers, which are equipped with the monitor program bamo128 (code.google.com/p/bamo128) or bamo32 (cs.ba-berlin.de),<br>
+- arduino boards with arduino bootloader (shipped with board)<br>
+- Motorola EVB board with 68HC11 and monitor<br>
+- Z80mini with monitor<br>
 
+// select your target processor or better your board<br>
+//#define AVR	 // diverse atmega, xmega, UC3, AP7000 working in cooperation with bamo128 or bamo32<br>
+		// or any processor with bajos code.google.com/p/bajos)
+#define ARDUINOBOOTLOADER	// any (avr) arduino board with arduino bootloader<br>
+//#define CPU68HC11		// 68HC11 development board with monitor<br>
+//#define CPUZ80		// the Z80 development board z80mini with monitor<br>
+<br><br>
+*Now compile it !! *
+Download and unpack minikermit.c and open a shell. Type from the shell prompt:<br>
+#> g++ minikermit.c -lncurses -ominikermit<br>
+compiles minikermit.c and produces the executable file minikermit. Be sure, you have installed the gnu c-development tools (g++) and the ncurses-library before.<br>
 
-You can downlaod the working version from the repository or teh last stable version minikermit07.tar.gz in the download area
+You can download the working version from the repository or the latest stable version from the download area.
