@@ -25,6 +25,12 @@ For USB/ACM ports sometimes you have awhile "skeletons in the closet" if you res
 #define BAUDRATE 	B57600<br>
 //#define BAUDRATE	B115200<br>
 <br>
+// select your target processor or better your board 
+//#define AVR	 // diverse atmega, xmega, UC3, AP7000 working in cooperation with bamo128 or bamo32 (code.google.com/p/bamo128; cs.ba-berlin.de)
+		// or any processor with bajos and minikermit
+#define ARDUINOBOOTLOADER	// any (avr) arduino board with arduino bootloader
+//#define CPU68HC11		// 68HC11 development board with monitor 
+//#define CPUZ80		// the Z80 development board z80mini with monitor
 
 
 You can downlaod the working version from the repository or teh last stable version minikermit07.tar.gz in the download area
