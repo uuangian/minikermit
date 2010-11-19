@@ -1,3 +1,9 @@
 Arduino boards are equipped with a minimal monitor program. There are diverse variants of arduino boards (and bootloaders) and I am not a specialist for this topic (correct me, if somewhat is wrong here).<br>
-I'm only writing about the boards arduino duemilanove and arduinoMega.
+I'm only writing about the boards arduino duemilanove and arduino Mega.
 I think, the explanations can be applied to other boards also.<br>
+
+The fuses bits in this arduinos are programmed for:<br>
+- 2 K word bootsection<br>
+- start after reset at boot section<br>
+- interupt vector table at address 0<br>
+The arduinos are programmmed with the bootloader in the 2K word bootsections.
