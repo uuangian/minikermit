@@ -1,6 +1,30 @@
-Minikermit i a linux terminal program especially for communication with microcontroller development boards.<br>
+Minikermit is a linux terminal program especially for communication with microcontroller development boards.<br><br>
 *How it works* <br>
-Connect the development board over a serial communication line with your pc and start minikermit in your shell. Minikermit then waits for key pressed at pc keypad and sends character over serial line to the development board. Characters, which the development board sends over serial line, are displayed in the minikermit terminal window.<br>
-minikermit terminated, if you press 'q' or 'Q' at keypad. If you press 'w', minikermit
-alters to upload-state (upload binary data in microcontroller board). This is the NONECHOMODE of minikermit (default after startup). The microcontroller can toogle to ECHOMODE by serial sending the TOGGLEECHOMODE-char (0x03).minikermit in ECHOMODE terminates only with CTRL-C sequence from shell.
+Connect the development board over a serial communication line with your pc and start minikermit in your shell. Minikermit then waits for key pressed at pc keypad and sends the character over serial line to the development board. Characters, which the development board sends over serial line, are displayed in the minikermit terminal window.<br>
+Minikermit terminates, if you press 'q' or 'Q' at keypad. If you press 'w', minikermit
+alters to upload-state (upload binary data in microcontroller board).<br>
+This is the NONECHOMODE of minikermit (default after startup). The microcontroller can toogle to ECHOMODE by serial sending the TOGGLEECHOMODE-char (0x03).minikermit in ECHOMODE terminates only with CTRL-C sequence from shell.
 When the microcontroller sends SUPRESSSERINPUT	(0x04), the pc blocks the output of chars from serial in the terminal window, if it sends ACCEPTSERINPUT (0x05), the chars from serial are written in the pc terminal window (default at startup).
+<br><br>
+*Compiling*<br>
+Minikermit works with different serial communication ports (ttyi, USBi, ACMi), baudrates and you can it adapt to different monitor programs at the development boards. Set the values for the preprocessor directives in minikermit.c for your environment.<br>
+// select your serial device<br>
+//#define MODEMDEVICE "/dev/ttyACM0"	/`*` 11-th position is 0`*`/<br>
+//#define MODEMDEVICE 	"/dev/ttyS0"	/`*`  first RS232 port`*`/<br>
+#define MODEMDEVICE 	"/dev/ttyUSB0"	/`*`  USB port`*`/<br>
+//#define MODEMDEVICE 	"/dev/ttyUSB1"	/`*`  USB port`*`/<br>
+//#define MODEMDEVICE 	"/dev/ttyS1"	/`*`  second RS232 port`*`/<br>
+
+For USB/ACM ports sometimes you have awhile "skeletons in the closet" if you reset your microcontroller board or temporary disconnect the board. Therefore minikermit tests successive for USB0, USB1,.... USB9 for a "living" connection port. Remove this code, if you not need this behavior.
+
+// select your baudrate<br>
+//#define BAUDRATE	B1200<br>
+//#define BAUDRATE	B9600<br>
+//#define BAUDRATE	B19200<br>
+//#define BAUDRATE	B38400<br>
+#define BAUDRATE 	B57600<br>
+//#define BAUDRATE	B115200<br>
+<br>
+
+
+You can downlaod the working version from the repository or teh last stable version minikermit07.tar.gz in the download area
