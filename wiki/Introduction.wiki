@@ -1,4 +1,4 @@
-Minikermit is a linux terminal program especially for communication with microcontroller development boards with monitors (minimal operating systems).<br><br>
+Minikermit is a linux terminal program especially for communication with microcontroller development boards with monitors (minimal operating systems) which support serial communication.<br><br>
 *How it works* <br>
 Connect the development board over a serial communication line with your pc and start minikermit in your shell. Minikermit then waits for key pressed at pc keypad and sends the character over serial line to the development board. Characters, which the development board sends over serial line, are displayed in the minikermit terminal window.<br>
 Minikermit terminates, if you press 'q' or 'Q' at keypad. If you press 'w', minikermit
@@ -42,5 +42,8 @@ Minikermit works with many development boards and monitor programs. It is prepar
 Download and unpack minikermit.c and open a shell. Type from the shell prompt:<br>
 #> g++ minikermit.c -lncurses -ominikermit<br>
 compiles minikermit.c and produces the executable file minikermit. Be sure, you have installed the gnu c-development tools (g++) and the ncurses-library before.<br>
+Connect your pc with the serial cable with your development board and start minikermit from the command line:<br>
+#>./minikermit<br>
+You can communicate now with your development board according to the monitor program.<br>
 
 You can download the working version from the repository or the latest stable version from the download area.
