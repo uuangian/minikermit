@@ -1,0 +1,4 @@
+Minikwrmit creates a child process. the parent process reads pc-keypad and sends the char via serial line to the development board. The child receives a char from serial line and display it in the pc terminal.<br>
+The terminal works with the ncurses library and allows control sequences for terminal control (position, color, ....).<br>
+The synchronization between pc and the microcontroller development board is a hairy problem. Serial drivers buffer 2 to 5 bytes. When the pc sends a data stream to the development board, when it know the board has received and processed the data?<br>
+The development board can send a control byte readNow (..) to the pc child process.
