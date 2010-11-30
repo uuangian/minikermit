@@ -35,11 +35,11 @@
 /*	bh: charonII und mrt54g    		051229	*/
 /**************************************************************************************************************/
 // select your target processor or better your board 
-// #define CPU68HC11
-// #define CPUZ80
-// #define AVR	 // diverse atmega, xmega, UC3, AP7000 working in cooperation with bamo128 or bamo32 and minikermit
+//#define AVR	 // diverse atmega, xmega, UC3, AP7000 working in cooperation with bamo128 or bamo32 (code.google.com/p/bamo128; cs.ba-berlin.de)
 		// or any processor with bajos and minikermit
-#define ARDUINOBOOTLOADER	 // any processor with arduino bootloader
+#define ARDUINOBOOTLOADER	// any (avr) arduino board with arduino bootloader
+//#define CPU68HC11		// 68HC11 development board with monitor 
+//#define CPUZ80		// the Z80 development board z80mini with monitor
 
 #define SCANSERIALDEVICES	// test for /dev/ttyUSB0,1,2,..9 or ACM0,1,2,..9
 
@@ -122,7 +122,7 @@ int main(int argc, char * argv[])	{
   sigaction(SIGHUP,&act,NULL);
   act.sa_handler= catchSIGUSR1;
   sigaction(SIGUSR1,&act,NULL);
-#ifdef SCANSERIALDEVICES	// open serail device
+#ifdef SCANSERIALDEVICES	// open serial device
   char modem[12];
   strcpy(modem,MODEMDEVICE);
   for (deviceNumber=0; deviceNumber < 10; deviceNumber++) 	{
@@ -170,7 +170,7 @@ if ((fdSerial=open(MODEMDEVICE,O_RDWR|O_NOCTTY))>0){perror(MODEMDEVICE); exit(-1
 	      	break;							} // terminate
 	  if ((cFromKeypad=='w') && !echoMode)			{
 		upLoadFile(fdSerial,'l');
-		continue;					} /* end of (if cFromKeypad='w'...) */
+		continue;					} /* end of (if cFromKeypad=='w'...) */
 	  write(fdSerial,&cFromKeypad,1); 			  /* write 1 byte to serial */
  				} 			 	  /* end of while(1) */
   			}	 			 /* end of (if (pid=fork() ...) */
