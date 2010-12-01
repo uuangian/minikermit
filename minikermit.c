@@ -35,9 +35,9 @@
 /*	bh: charonII und mrt54g    		051229	*/
 /**************************************************************************************************************/
 // select your target processor or better your board 
-//#define AVR	 // diverse atmega, xmega, UC3, AP7000 working in cooperation with bamo128 or bamo32 (code.google.com/p/bamo128; cs.ba-berlin.de)
+#define AVR	 // diverse atmega, xmega, UC3, AP7000 working in cooperation with bamo128 or bamo32 (code.google.com/p/bamo128; cs.ba-berlin.de)
 		// or any processor with bajos and minikermit
-#define ARDUINOBOOTLOADER	// any (avr) arduino board with arduino bootloader
+//#define ARDUINOBOOTLOADER	// any (avr) arduino board with arduino bootloader
 //#define CPU68HC11		// 68HC11 development board with monitor 
 //#define CPUZ80		// the Z80 development board z80mini with monitor
 
@@ -406,7 +406,7 @@ for (p=0;p<pages;p++)			{
 	readyNow=false;
 	fread(&c,1,1,file);	/* read a char from file*/
 	write(fdSerial,&c,1);		/* write to serial */
-	usleep(2*DELAY);
+	usleep(5*DELAY);
 //if (numByte%2)while (!readyNow) sched_yield();	
 							}
 /*write(fdSerial,&c,1); /* zur synchronisation*/
@@ -414,7 +414,7 @@ for (p=0;p<pages;p++)			{
   cout <<"page:\t"<<p<<" from "<<pages<<" pages written \r";
   cout.flush();
   while (!readyNow) sched_yield();
-  usleep(5*DELAY);
+  usleep(10*DELAY);
 					}
 /* der Rest*/
 int rest=0;
