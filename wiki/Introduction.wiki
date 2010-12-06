@@ -7,6 +7,7 @@ This is the NONECHOMODE of minikermit (default after startup). The microcontroll
 When the microcontroller sends SUPRESSSERINPUT	(0x04), the pc blocks the output of chars from serial in the terminal window, if it sends ACCEPTSERINPUT (0x05), the chars from serial are written in the pc terminal window (default at startup).
 <br><br>
 *Compiling*<br>
+Download and unpack to minikermit.c and open a shell. Edit minikermit.c for your environment with an editor.
 Minikermit works with different serial communication ports (ttyi, USBi, ACMi), baudrates and you can it adapt to different monitor programs at the development boards. Set the values for the preprocessor directives in minikermit.c for your environment.<br>
 // select your serial device<br>
 //#define MODEMDEVICE "/dev/ttyACM0"	/`*` 11-th position is 0`*`/<br>
@@ -38,8 +39,8 @@ Minikermit works with many development boards and monitor programs. It is prepar
 //#define CPU68HC11		// 68HC11 development board with monitor<br>
 //#define CPUZ80		// the Z80 development board z80mini with monitor<br>
 <br><br>
-*Now compile it !! *
-Download and unpack minikermit.c and open a shell. Type from the shell prompt:<br>
+*Now compile it !! * <br>
+From the shell prompt type:<br>
 #> g++ minikermit.c -lncurses -ominikermit<br>
 compiles minikermit.c and produces the executable file minikermit. Be sure, you have installed the gnu c-development tools (g++) and the ncurses-library before.<br>
 Connect your pc with the serial cable with your development board and start minikermit from the command line:<br>
