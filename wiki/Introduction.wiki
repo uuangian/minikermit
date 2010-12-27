@@ -23,7 +23,7 @@ For USB/ACM ports sometimes you have awhile "skeletons in the closet" if you res
 //#define BAUDRATE	B9600<br>
 //#define BAUDRATE	B19200<br>
 //#define BAUDRATE	B38400<br>
-#define BAUDRATE 	B57600<br>
+#define BAUDRATE 	B57600<br>           // its the arduino baudrate (mega and duemilanove)
 //#define BAUDRATE	B115200<br>
 <br><br>
 Minikermit works with many development boards and monitor programs. It is prepared for cooperation with:<br>
@@ -32,8 +32,8 @@ Minikermit works with many development boards and monitor programs. It is prepar
 - Motorola EVB board with 68HC11 and monitor<br>
 - Z80mini with monitor<br>
 
-// select your target processor or better your board<br>
-//#define AVR	 // diverse atmega, xmega, UC3, AP7000 working in cooperation with bamo128 or bamo32<br>
+// select your target processor or better your board (select only one !!)<br>
+//#define AVR	 // diverse atmega, xmega, UC3, AP7000 working in cooperation with bamo128 or bamo32 -> this MACRO is changed to BAMOAVR for future releases<br>
 		// or any processor with bajos code.google.com/p/bajos)
 #define ARDUINOBOOTLOADER	// any (avr) arduino board with arduino bootloader<br>
 //#define CPU68HC11		// 68HC11 development board with monitor<br>
