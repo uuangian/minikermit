@@ -35,9 +35,17 @@
 /*	bh: charonII und mrt54g    		051229	*/
 /**************************************************************************************************************/
 // select your target processor or better your board 
-#define AVR	 // diverse atmega, xmega, UC3, AP7000 working in cooperation with bamo128 or bamo32 (code.google.com/p/bamo128; cs.ba-berlin.de)
+// #define AVR	 // diverse atmega, xmega, UC3, AP7000 working in cooperation with bamo128 or bamo32 (code.google.com/p/bamo128; cs.ba-berlin.de)
 		// or any processor with bajos and minikermit
-//#define ARDUINOBOOTLOADER	// any (avr) arduino board with arduino bootloader
+//#define HOLZ
+#ifdef HOLZ
+#else
+#define ARDUINOBOOTLOADER	// any (avr) arduino board with arduino bootloader
+#define	ARDUINOSTYLE		// send reset command before bootloading
+#endif
+
+
+#define CPUAVR
 //#define CPU68HC11		// 68HC11 development board with monitor 
 //#define CPUZ80		// the Z80 development board z80mini with monitor
 
@@ -66,6 +74,7 @@
 #include <sys/wait.h>
 #include <fcntl.h>
 #include <termios.h>
+#include <errno.h>
 #include <sys/ioctl.h>
 #include <sys/signal.h>
 #include <curses.h>
@@ -75,6 +84,7 @@
 #include <iostream>
 #include <string.h>
 #include <sys/file.h>
+#include <errno.h>
 
 using namespace std;
 
@@ -86,6 +96,7 @@ void resetAndSetExpandedMode	(int fdSerial);
 
 void upLoadFile		(int fdSerial, char order);
 bool testEmptyPage	(FILE* file);
+ssize_t mywrite(int fd, const void *buf, size_t count);
 
 #define NAMELENGTH	48       /* max. length of filename*/
 #define	DELAY		100	/* atmega1280 sync problem */
@@ -146,12 +157,12 @@ if ((fdSerial=open(MODEMDEVICE,O_RDWR|O_NOCTTY))>0){perror(MODEMDEVICE); exit(-1
   newTio.c_cflag	= BAUDRATE|CS8|CLOCAL|CREAD;
   newTio.c_iflag	= IGNPAR;
   newTio.c_oflag	= 0;
-  newTio.c_lflag	= 0;	/* non canonical mode (char mode)*/
+  newTio.c_lflag	= 0;	/* non canonical mode (char mode)*/ // 1 stop bit ???
   newTio.c_cc[VTIME]	= 0;	/* blocked*/
   newTio.c_cc[VMIN]	= 1;	/* return, when 1 byte available*/
   tcflush(fdSerial,TCIFLUSH);
   tcsetattr(fdSerial,TCSANOW,&newTio);
-
+ 
 #ifdef CPU68HC11
   setAllOnHigh(fdSerial);
   resetInExpandedMode(fdSerial);
@@ -171,12 +182,12 @@ if ((fdSerial=open(MODEMDEVICE,O_RDWR|O_NOCTTY))>0){perror(MODEMDEVICE); exit(-1
 	  if ((cFromKeypad=='w') && !echoMode)			{
 		upLoadFile(fdSerial,'l');
 		continue;					} /* end of (if cFromKeypad=='w'...) */
-	  write(fdSerial,&cFromKeypad,1); 			  /* write 1 byte to serial */
+	  mywrite(fdSerial,&cFromKeypad,1); 			  /* write 1 byte to serial */
  				} 			 	  /* end of while(1) */
   			}	 			 /* end of (if (pid=fork() ...) */
   else
 	while (1)		{		/* child */
-		read(fdSerial,&cFromSerial,1);		/* read serial 1 byte */
+		while(read(fdSerial,&cFromSerial,1)!=1);		/* read serial 1 byte */
 #ifdef ARDUINOBOOTLOADER
 		if (cFromSerial == 0x14)		continue;	// wait for 0x10
 #endif
@@ -208,6 +219,7 @@ int iostatus;
 
 void resetInExpandedMode(int fdSerial)	{
     setAllOnHigh(fdSerial);
+    usleep(1000);
     resetAndSetExpandedMode(fdSerial);	}
 
 void resetAndSetBootMode(int fdSerial)	{
@@ -235,28 +247,29 @@ char*	command;
 
 #ifdef CPU68HC11
 	      command="LOAD T";
-	      write(fdSerial,command,6);
+	      mywrite(fdSerial,command,6);
 	      c=CR;
-	      write(fdSerial,&c,1);
+	      mywrite(fdSerial,&c,1);
 	      sleep(1);   
 	      cout << "name of s19 file for uploading:\t";
 #endif
 #ifdef CPUZ80
-	      write(fdSerial,&order,1); /* send order to serial*/
+	      mywrite(fdSerial,&order,1); /* send order to serial*/
 	      c=CR;
-	      write(fdSerial,&c,1);
+	      mywrite(fdSerial,&c,1);
 	      sleep(1);   
 	      /*gendert fr den BAMO80*/
 	      cout << "name of hex-file for uploading:\t";
 #endif
-#ifdef AVR
+#ifdef CPUAVR
 	      c='w';							/* order*/
-	      write(fdSerial,&c,1);
+	      mywrite(fdSerial,&c,1);
 	      sleep(1);   
-	      cout << "name of cob (bin) -file for uploading:\t";
 #endif
 #ifdef ARDUINOBOOTLOADER
 	      cout << "name of binary -file for uploading:\t";
+#else
+	      cout << "name of cob (bin) -file for uploading:\t";
 #endif
 	      cout.flush();
 	      int i;
@@ -273,7 +286,7 @@ char*	command;
 	      cout << c;
 	      c=CR;
 #if  CPU68HC11 || CPUZ80
-		write(fdSerial,&c,1);
+		mywrite(fdSerial,&c,1);
 		cout << c;
 #endif
 		fileName[i]='\0';
@@ -282,23 +295,32 @@ char*	command;
 		/* try to open file and send it to serial, abort on error*/
 		if ((file=fopen(fileName,"r")) == NULL)	{
 		    perror(fileName);
+#ifdef ARDUINOSTYLE
+		    resetInExpandedMode(fdSerial);
+usleep(80000);		// adjust it for your arduino board - reset pulse about 3,5 ms
+		    c='Q';
+mywrite(fdSerial,&c,1);
+c=' ';
+mywrite(fdSerial,&c,1);
+#else	    
 		    c=CR;
 		    cout << c;
 		    cout.flush();
 		    c=ESC;	
-		    write(fdSerial,&c,1);
+		    mywrite(fdSerial,&c,1);
+#endif
 		    return;			}
 
-#if ((!defined(AVR)) && (!defined(ARDUINOBOOTLOADER)))
+#if !defined(CPUAVR)
 		    while (1)	{
 			if (feof(file)) break;
 			fread(&c,1,1,file); /* read a char from file*/
-			write(fdSerial,&c,1);	    /* write to serial*/
+			mywrite(fdSerial,&c,1);	    /* write to serial*/
 				}
 #endif
 
-#if defined(AVR) || defined(ARDUINOBOOTLOADER)
-long  pos;
+#if defined(CPUAVR)
+unsigned long pos;
 fseek(file,0L,SEEK_END);
 pos=ftell(file);
 int pages=pos/(128*2);
@@ -308,7 +330,7 @@ if (pages >=(64*8-4*8)||(pos==0))	{	/*??????????*/
 	cout.flush();
 	fclose(file);	
     	c=ESC;
-	 write(fdSerial,&c,1);
+	 mywrite(fdSerial,&c,1);
 	return;				}
 rewind(file);
 #endif
@@ -316,77 +338,88 @@ rewind(file);
 #ifdef ARDUINOBOOTLOADER
 unsigned short int address=0;
 cout << "\r\n";
+#ifdef ARDUINOSTYLE
 resetInExpandedMode(fdSerial);
-usleep(100);
+usleep(80000);		// adjust it for your arduino board - reset pulse about 3,5 ms
+#endif
 int p;
 for (p=0;p<pages;p++)			{
   c='U';	// write flash start address
-write(fdSerial,&c,1);
-write(fdSerial,&address,1);		// little endian
-write(fdSerial,(unsigned char*)&address+1,1);	// big endian startaddress is 0000 in words
+mywrite(fdSerial,&c,1);
+ usleep((1000000*2)/BAUDRATE);
+mywrite(fdSerial,&address,1);		// little endian
+mywrite(fdSerial,(unsigned char*)&address+1,1);	// big endian startaddress is 0000 in words
 address+=0x80;
 readyNow=false;
 c=' ';
-write(fdSerial,&c,1);
-while (!readyNow);		// wait for 0x14 0x10
+mywrite(fdSerial,&c,1);
+while (!readyNow)sched_yield();		// wait for 0x14 0x10
 c='d';				// write flash 
-write(fdSerial,&c,1);
+mywrite(fdSerial,&c,1);
 c=0x1;
-write(fdSerial,&c,1);		// big endian
+mywrite(fdSerial,&c,1);		// big endian
 c=0;
-write(fdSerial,&c,1);		// little endian page size in bytes
+mywrite(fdSerial,&c,1);		// little endian page size in bytes
 c='F';				// i think its so for flash
-write(fdSerial,&c,1);
+mywrite(fdSerial,&c,1);
+ usleep((1000000*2)/BAUDRATE);
 for (int numByte=0; numByte < 256;numByte++)		{
 	fread(&c,1,1,file);	/* read a char from file*/
-	write(fdSerial,&c,1);	/* write to serial */
+	mywrite(fdSerial,&c,1);	/* write to serial */
 							}
 readyNow=false;
 c=' '; 				// now write it
-write(fdSerial,&c,1);
+mywrite(fdSerial,&c,1);
 cout <<"page:\t"<<p<<" from "<<pages<<" pages written\r";
 cout.flush();
-while (!readyNow);		// wait for 0x14 0x10
+while (!readyNow)sched_yield();		// wait for 0x14 0x10
 }
 
 /* the same for the Rest */
 int rest=0;
 if	( bytesInLastPage!=0)		{
 c='U';	// write flash start address
-write(fdSerial,&c,1);
-write(fdSerial,&address,1);		// little endian
-write(fdSerial,((unsigned char*)&address)+1,1);	// big endian startaddress is 0000 in words
+mywrite(fdSerial,&c,1);
+mywrite(fdSerial,&address,1);		// little endian
+mywrite(fdSerial,((unsigned char*)&address)+1,1);	// big endian startaddress is 0000 in words
 readyNow=false;
 c=' ';
-write(fdSerial,&c,1);
+mywrite(fdSerial,&c,1);
 while (!readyNow);	// wait for 0x14 0x10
 c='d';	// write flash 
-write(fdSerial,&c,1);
+mywrite(fdSerial,&c,1);
+ usleep((1000000*2)/BAUDRATE);
 c=0x01;
-write(fdSerial,&c,1);	// big endian
+mywrite(fdSerial,&c,1);	// big endian
 c=0;
-write(fdSerial,&c,1);	// little endian page size in bytes
+mywrite(fdSerial,&c,1);	// little endian page size in bytes
 c='F';	// i think its so for flash
-write(fdSerial,&c,1);
+mywrite(fdSerial,&c,1);
 /* even bytes!!! */
+ usleep((1000000*2)/BAUDRATE);
 for (rest=0; rest < bytesInLastPage;rest++)	{
 	if (feof(file)) break;
   	fread(&c,1,1,file); /* read a char from file*/
-  	write(fdSerial,&c,1);
+  	mywrite(fdSerial,&c,1);
  						}
 c=0XFF;
-for (;rest<256;rest++) write(fdSerial,&c,1);  	
+for (;rest<256;rest++) mywrite(fdSerial,&c,1);  	
 readyNow=false;
 c=' ';	//now write it
-write(fdSerial,&c,1);
+mywrite(fdSerial,&c,1);
 while (!readyNow);	// wait for 0x14 0x10
 }
 cout << "page:\t" << pages << " with " << bytesInLastPage<<" bytes written (last page)  filelength: " << pos;
 cout.flush();
-#endif
+usleep(20000);
+c='Q';
+mywrite(fdSerial,&c,1);
+c=' ';
+mywrite(fdSerial,&c,1);
+#else
 
-#ifdef AVR
-c='s';	 	
+#ifdef CPUAVR
+c='s';	
 write(fdSerial,&c,1);		/* cmd*/
 int p;
 cout << "\r";
@@ -395,21 +428,18 @@ for (p=0;p<pages;p++)			{
  if (first&&testEmptyPage(file)) continue;
  first=0;
   readyNow=false;
-  c='p'; 	write(fdSerial,&c,1);		/* cmd */
-  usleep(DELAY);
-  c=p/256;	write(fdSerial,&c,1);		/* high endian first*/
-  usleep(DELAY);
-  c=p%256;	write(fdSerial,&c,1);
-  usleep(DELAY);	
+  c='p'; 	mywrite(fdSerial,&c,1);		/* cmd */
+  c=p/256;	mywrite(fdSerial,&c,1);		/* high endian first*/
+  c=p%256;	mywrite(fdSerial,&c,1);	
   while (!readyNow) sched_yield();
+  //sleep(1);
   for (int numByte=0; numByte < 256;numByte++)		{
 	readyNow=false;
 	fread(&c,1,1,file);	/* read a char from file*/
-	write(fdSerial,&c,1);		/* write to serial */
-	usleep(5*DELAY);
+	mywrite(fdSerial,&c,1);		/* write to serial */
 //if (numByte%2)while (!readyNow) sched_yield();	
 							}
-/*write(fdSerial,&c,1); /* zur synchronisation*/
+/*mywrite(fdSerial,&c,1); /* zur synchronisation*/
 //  readyNow=false;	
   cout <<"page:\t"<<p<<" from "<<pages<<" pages written \r";
   cout.flush();
@@ -420,52 +450,49 @@ for (p=0;p<pages;p++)			{
 int rest=0;
 if	( bytesInLastPage!=0)		{
   readyNow=false;
-  c='p';	write(fdSerial,&c,1);		/* cmd*/
-  c=p/256;	write(fdSerial,&c,1);		/* high endian first*/
-  usleep(DELAY);
-  c=p%256;	write(fdSerial,&c,1);
-  usleep(DELAY);
+  c='p';	mywrite(fdSerial,&c,1);		/* cmd*/
+  c=p/256;	mywrite(fdSerial,&c,1);		/* high endian first*/
+  c=p%256;	mywrite(fdSerial,&c,1);
   while (!readyNow) sched_yield();
 /* even bytes!!! */
   for (rest=0; rest < bytesInLastPage;rest++)	{
 	readyNow=false;
 	if (feof(file)) break;
   	fread(&c,1,1,file); /* read a char from file*/
-  	write(fdSerial,&c,1);
+  	mywrite(fdSerial,&c,1);
 //if (rest%2) while (!readyNow) sched_yield();
-	usleep(3* DELAY);
  						}
   c=0XFF;
   for (;rest<256;rest++)	{
 	readyNow=false; 
-	write(fdSerial,&c,1); 
+	mywrite(fdSerial,&c,1); 
 //if (rest%2) while (!readyNow) sched_yield();	
-	usleep(3*DELAY); 	}
+				}
 					}
 
 cout << "page:\t" << pages << " with " << bytesInLastPage<<" bytes written (last page)  filelength: " << pos << "-> 0x" << (pos>>16);
 cout.flush();
 //while (!readyNow) sched_yield();
 usleep(5*DELAY);
-c='e';	 	write(fdSerial,&c,1);		/* cmd*/
+c='e';	 	mywrite(fdSerial,&c,1);		/* cmd*/
 usleep(15*DELAY);
 char str[12];
 sprintf(str," %05x\n",(pos%(1<<16)));
 
 for (rest=0; rest < 7; rest++)	{
-	write(fdSerial,str+rest,1);
-	usleep(5*DELAY);	}
+	mywrite(fdSerial,str+rest,1);
+				}
 #endif					/* ATMEGA128*/
-
+#endif
 fclose(file);	
 #ifdef CPUZ80
 		    sleep(2);
 		    cout << endl;
 		    c=ESC;
-		    write(fdSerial,&c,1);
+		    mywrite(fdSerial,&c,1);
 #endif
 cout.flush();	
-#ifndef AVR
+#ifndef CPUAVR
 		    c=0; 
 		    write(fdSerial,&c,1); /* send 0 to serial, z80 is waiting for it*/
 #endif
@@ -473,7 +500,7 @@ cout.flush();
 
 
 bool testEmptyPage(FILE* file)	{
- long pos=ftell(file);
+ unsigned long pos=ftell(file);
  bool empty=true;  
  char c;
  for (int n=0; n< (128*2); n++)	{
@@ -481,3 +508,23 @@ bool testEmptyPage(FILE* file)	{
 	if (c!=0) empty=false;	};
   if (!empty) fseek(file,pos,SEEK_SET); /* zurueck*/
   return empty;			}
+
+// linux usb serial problem with blocked write sys calls
+ssize_t mywrite(int fd, const void *buf, size_t count)	{
+    size_t len = 0;
+    int	rc;
+ 
+    //return write(fd, buf, count);
+    
+    while (count) {
+    rc = write(fd, buf, count);
+    if (rc < 0) {
+      fprintf(stderr, "%s: ser_write(): write error: \n",strerror(errno));
+      exit(1);
+    }
+    len+= rc;
+    count-=rc;
+  }
+ //usleep((1000000*2)/BAUDRATE);	// adjust it???	
+    return len;
+}
