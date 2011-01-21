@@ -33,11 +33,13 @@ Minikermit works with many development boards and monitor programs. It is prepar
 - Z80mini with monitor<br>
 
 // select your target processor or better your board (select only one !!)<br>
-//#define AVR	 // diverse atmega, xmega, UC3, AP7000 working in cooperation with bamo128 or bamo32 -> this MACRO is changed to BAMOAVR for future releases<br>
+//#define BAMOAVR	 // diverse atmega, xmega, UC3, AP7000 working in cooperation with bamo128 or bamo32<br>
 		// or any processor with bajos code.google.com/p/bajos)
 #define ARDUINOBOOTLOADER	// any (avr) arduino board with arduino bootloader<br>
 //#define CPU68HC11		// 68HC11 development board with monitor<br>
 //#define CPUZ80		// the Z80 development board z80mini with monitor<br>
+#define ARDUINOSTYLE
+with the 'w'-command the arduino board ist resetted per software und the bootloader upload the bin-file in flash (with arduino/stk500v1-protocol)
 <br><br>
 *Now compile it !! * <br>
 From the shell prompt type:<br>
