@@ -1,0 +1,5 @@
+#summary how upload binary programs with minikermit
+If you type 'w' int the minikermit terminal, you can upload binary data at the microcontroller board.<br>
+Minikermit asks for a file name and opens the file for upload.<br>
+We use 2 protocols for upload binary programs or data currently, the protocol of bamo128 and the protocol of arduino bootloader (stk500 compatible).<br>
+The arduino version of minikermit [MiniKermitAndArduino] carried out a reset of arduino board (over the serial DTR control line) before flashing the program.
