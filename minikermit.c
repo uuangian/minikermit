@@ -335,7 +335,7 @@ unsigned short int address=0;
 cout << "\r\n";
 #ifdef ARDUINOSWRESET
 resetInExpandedMode(fdSerial);
-usleep(80000);		// adjust it for your arduino board - reset pulse about 3,5 ms
+usleep(500000);		// adjust it for your arduino board - reset pulse about 3,5 ms
 #endif
 int p;
 for (p=0;p<pages;p++)			{
