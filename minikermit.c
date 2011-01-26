@@ -3,13 +3,13 @@
 * See the file "license.terms" for information on usage and redistribution
 * of this file.
 */
-/* minikermit Version 0.9.7	101101 -> works with arduino bootloader */
+/* minikermit Version 0.9.7	101101 -> works with arduino/stk500v1 protocol for bootloader */
 /* minikermit Version 0.9.6	091126 -> atmega1280 isp sync problem*/
 /* minikermit Version 0.9.5	090601 -> test usb device number*/
 /* minikermit Version 0.9.4	090105 -> empty page error*/
 /* minikermit Version 0.9.3	080331 -> problems with upload sync*/
 /* minikermit Version 0.9.2	061228*/
-/* mini-kermit	Version 0.9	061203*/
+/* mini-kermit	Version 0.8	061203*/
 /* mini-kermit	Version 0.7	040615*/
 /* mini-kermit	Version 0.6	040615*/
 
@@ -35,17 +35,12 @@
 /*	bh: charonII und mrt54g    		051229	*/
 /**************************************************************************************************************/
 // select your target processor or better your board 
-// #define AVR	 // diverse atmega, xmega, UC3, AP7000 working in cooperation with bamo128 or bamo32 (code.google.com/p/bamo128; cs.ba-berlin.de)
-		// or any processor with bajos and minikermit
-//#define HOLZ
-#ifdef HOLZ
-#else
+// #define BAMOAVR	 // diverse atmega, xmega, UC3, AP7000 working in cooperation with bamo128 or bamo32 (code.google.com/p/bamo128; cs.ba-berlin.de)
+			// or any processor with bajos and minikermit
+
 #define ARDUINOBOOTLOADER	// any (avr) arduino board with arduino bootloader
-#define	ARDUINOSTYLE		// send reset command before bootloading
-#endif
+#define	ARDUINOSWRESET		// send reset command before bootloading
 
-
-#define CPUAVR
 //#define CPU68HC11		// 68HC11 development board with monitor 
 //#define CPUZ80		// the Z80 development board z80mini with monitor
 
@@ -261,7 +256,7 @@ char*	command;
 	      /*gendert fr den BAMO80*/
 	      cout << "name of hex-file for uploading:\t";
 #endif
-#ifdef CPUAVR
+#ifdef BAMOAVR
 	      c='w';							/* order*/
 	      mywrite(fdSerial,&c,1);
 	      sleep(1);   
@@ -295,13 +290,11 @@ char*	command;
 		/* try to open file and send it to serial, abort on error*/
 		if ((file=fopen(fileName,"r")) == NULL)	{
 		    perror(fileName);
-#ifdef ARDUINOSTYLE
-		    resetInExpandedMode(fdSerial);
-usleep(80000);		// adjust it for your arduino board - reset pulse about 3,5 ms
+#ifdef ARDUINOBOOTLOADER
 		    c='Q';
-mywrite(fdSerial,&c,1);
-c=' ';
-mywrite(fdSerial,&c,1);
+		    mywrite(fdSerial,&c,1);
+		    c=' ';
+		    mywrite(fdSerial,&c,1);		// leave bootloading mode
 #else	    
 		    c=CR;
 		    cout << c;
@@ -311,7 +304,7 @@ mywrite(fdSerial,&c,1);
 #endif
 		    return;			}
 
-#if !defined(CPUAVR)
+#if !defined(BAMOAVR) && !defined(ARDUINOBOOTLOADER)
 		    while (1)	{
 			if (feof(file)) break;
 			fread(&c,1,1,file); /* read a char from file*/
@@ -319,7 +312,7 @@ mywrite(fdSerial,&c,1);
 				}
 #endif
 
-#if defined(CPUAVR)
+#if defined(BAMOAVR) || defined(ARDUINOBOOTLOADER)
 unsigned long pos;
 fseek(file,0L,SEEK_END);
 pos=ftell(file);
@@ -329,8 +322,10 @@ if (pages >=(64*8-4*8)||(pos==0))	{	/*??????????*/
 	cout << " program too long,  overwrites bootsection! - or perhaps no bytes in file??\n";
 	cout.flush();
 	fclose(file);	
-    	c=ESC;
-	 mywrite(fdSerial,&c,1);
+    	c='Q';
+	mywrite(fdSerial,&c,1);
+	c=' ';
+    mywrite(fdSerial,&c,1);		// leave bootloading mode
 	return;				}
 rewind(file);
 #endif
@@ -338,7 +333,7 @@ rewind(file);
 #ifdef ARDUINOBOOTLOADER
 unsigned short int address=0;
 cout << "\r\n";
-#ifdef ARDUINOSTYLE
+#ifdef ARDUINOSWRESET
 resetInExpandedMode(fdSerial);
 usleep(80000);		// adjust it for your arduino board - reset pulse about 3,5 ms
 #endif
@@ -418,7 +413,7 @@ c=' ';
 mywrite(fdSerial,&c,1);
 #else
 
-#ifdef CPUAVR
+#if  defined(BAMOAVR) || defined(ARDUINOBOOTLOADER)
 c='s';	
 write(fdSerial,&c,1);		/* cmd*/
 int p;
@@ -492,7 +487,7 @@ fclose(file);
 		    mywrite(fdSerial,&c,1);
 #endif
 cout.flush();	
-#ifndef CPUAVR
+#if !defined(BAMOAVR) && !defined(ARDUINOBOOTLOADER)
 		    c=0; 
 		    write(fdSerial,&c,1); /* send 0 to serial, z80 is waiting for it*/
 #endif
@@ -525,6 +520,6 @@ ssize_t mywrite(int fd, const void *buf, size_t count)	{
     len+= rc;
     count-=rc;
   }
- //usleep((1000000*2)/BAUDRATE);	// adjust it???	
+// usleep((1000000*2)/BAUDRATE);	// adjust it???	
     return len;
 }
