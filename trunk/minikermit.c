@@ -80,6 +80,7 @@
 #include <string.h>
 #include <sys/file.h>
 #include <errno.h>
+#include <limits.h>
 
 using namespace std;
 
@@ -174,10 +175,19 @@ if ((fdSerial=open(MODEMDEVICE,O_RDWR|O_NOCTTY))>0){perror(MODEMDEVICE); exit(-1
 	  	kill(pid,SIGKILL);	/* kill child */
 	      	wait(NULL);
 	      	break;							} // terminate
-	  if ((cFromKeypad=='w') && !echoMode)			{
-		upLoadFile(fdSerial,'l');
+	  if ((cFromKeypad=='w') && !echoMode)			{ /* write data in flash at address 0 */
+		upLoadFile(fdSerial,'F');
 		continue;					} /* end of (if cFromKeypad=='w'...) */
-	  mywrite(fdSerial,&cFromKeypad,1); 			  /* write 1 byte to serial */
+	  if ((cFromKeypad=='W') && !echoMode)			{ /* write data in flash at address */
+		upLoadFile(fdSerial,'f');
+		continue;					} /* end of (if cFromKeypad=='W'...) */
+	  if ((cFromKeypad=='E') && !echoMode)			{ /* write data in eeprom at address */
+		upLoadFile(fdSerial,'E');
+		continue;					} /* end of (if cFromKeypad=='F'...) */
+	  if ((cFromKeypad=='S') && !echoMode)			{ /* write data in sram at address */
+		upLoadFile(fdSerial,'S');
+		continue;					} /* end of (if cFromKeypad=='S'...) */
+	    mywrite(fdSerial,&cFromKeypad,1); 			  /* write 1 byte to serial */
  				} 			 	  /* end of while(1) */
   			}	 			 /* end of (if (pid=fork() ...) */
   else
@@ -249,7 +259,8 @@ char*	command;
 	      cout << "name of s19 file for uploading:\t";
 #endif
 #ifdef CPUZ80
-	      mywrite(fdSerial,&order,1); /* send order to serial*/
+		c='l';
+	      mywrite(fdSerial,&c,1); /* send order to serial*/
 	      c=CR;
 	      mywrite(fdSerial,&c,1);
 	      sleep(1);   
@@ -330,12 +341,22 @@ if (pages >=(64*8-4*8)||(pos==0))	{	/*??????????*/
 rewind(file);
 #endif
 
-#ifdef ARDUINOBOOTLOADER
-unsigned short int address=0;
-cout << "\r\n";
+#ifdef ARDUINOBOOTLOADER	// take linux int (32 or 64) bit address
+unsigned int address=0;
+if (order != 'w')	{
+    cout << "start address: \n"; cout.flush();
+      while(!(cin >> address))
+  {
+    cin.clear();
+    cin.ignore(INT_MAX,'\n');
+  }
+}
+
+    cout << "\r\n";
 #ifdef ARDUINOSWRESET
-resetInExpandedMode(fdSerial);
-usleep(500000);		// adjust it for your arduino board - reset pulse about 3,5 ms
+if (order == 'w') 	{ // only upload flash at address 0 sw reset	
+	resetInExpandedMode(fdSerial);
+	usleep(500000);	}	// adjust it for your arduino board - reset pulse about 3,5 ms
 #endif
 int p;
 for (p=0;p<pages;p++)			{
@@ -343,7 +364,7 @@ for (p=0;p<pages;p++)			{
 mywrite(fdSerial,&c,1);
  usleep((1000000*2)/BAUDRATE);
 mywrite(fdSerial,&address,1);		// little endian
-mywrite(fdSerial,(unsigned char*)&address+1,1);	// big endian startaddress is 0000 in words
+mywrite(fdSerial,(unsigned char*)&address+1,1);	// big endian startaddress in words
 address+=0x80;
 readyNow=false;
 c=' ';
@@ -355,8 +376,8 @@ c=0x1;
 mywrite(fdSerial,&c,1);		// big endian
 c=0;
 mywrite(fdSerial,&c,1);		// little endian page size in bytes
-c='F';				// i think its so for flash
-mywrite(fdSerial,&c,1);
+//c='F';				// i think its so for flash
+mywrite(fdSerial,&order,1);
  usleep((1000000*2)/BAUDRATE);
 for (int numByte=0; numByte < 256;numByte++)		{
 	fread(&c,1,1,file);	/* read a char from file*/
