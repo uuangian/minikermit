@@ -150,10 +150,19 @@ if ((fdSerial=open(MODEMDEVICE,O_RDWR|O_NOCTTY))>0){perror(MODEMDEVICE); exit(-1
 	  if (((cFromKeypad=='q')||(cFromKeypad=='Q')) && !echoMode)	{
 	  	kill(pid,SIGKILL);	/* kill child */
 	      	wait(NULL);
-	      	break;							} // terminate
-	  if ((cFromKeypad=='w') && !echoMode)			{
-		upLoadFile(fdSerial,'l');
+	      	break;		  
+	  if ((cFromKeypad=='w') && !echoMode)			{ /* write data in flash at address 0 */
+		upLoadFile(fdSerial,'F');
 		continue;					} /* end of (if cFromKeypad=='w'...) */
+	  if ((cFromKeypad=='W') && !echoMode)			{ /* write data in flash at address */
+		upLoadFile(fdSerial,'f');
+		continue;					} /* end of (if cFromKeypad=='W'...) */
+	  if ((cFromKeypad=='E') && !echoMode)			{ /* write data in eeprom at address */
+		upLoadFile(fdSerial,'E');
+		continue;					} /* end of (if cFromKeypad=='F'...) */
+	  if ((cFromKeypad=='S') && !echoMode)			{ /* write data in sram at address */
+		upLoadFile(fdSerial,'S');
+		continue;					} /* end of (if cFromKeypad=='S'...) */
 	  mywrite(fdSerial,&cFromKeypad,1); 			  /* write 1 byte to serial */
  				} 			 	  /* end of while(1) */
   			}	 			 /* end of (if (pid=fork() ...) */
@@ -255,7 +264,15 @@ mywrite(fdSerial,&c,1);		// leave bootloading mode
 	return;				}
 rewind(file);
 
-unsigned short int address=0;
+unsigned int address=0;		// take linux int (32 or 64) bit address
+if (order != 'w')	{
+    cout << "start address: \n"; cout.flush();
+      while(!(cin >> address))
+  {
+    cin.clear();
+    cin.ignore(INT_MAX,'\n');
+  }
+}
 cout << "\r\n";
 #ifdef ARDUINOSWRESET
 resetInExpandedMode(fdSerial);
