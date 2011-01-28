@@ -175,19 +175,21 @@ if ((fdSerial=open(MODEMDEVICE,O_RDWR|O_NOCTTY))>0){perror(MODEMDEVICE); exit(-1
 	  	kill(pid,SIGKILL);	/* kill child */
 	      	wait(NULL);
 	      	break;							} // terminate
+	  mywrite(fdSerial,&cFromKeypad,1); 			  /* write 1 byte to serial */
 	  if ((cFromKeypad=='w') && !echoMode)			{ /* write data in flash at address 0 */
-		upLoadFile(fdSerial,'F');
-		continue;					} /* end of (if cFromKeypad=='w'...) */
-	  if ((cFromKeypad=='W') && !echoMode)			{ /* write data in flash at address */
 		upLoadFile(fdSerial,'f');
+		continue;					} /* end of (if cFromKeypad=='w'...) */
+	 if ((cFromKeypad=='W') && !echoMode)			{ /* write data in flash at address */
+		upLoadFile(fdSerial,'F');
 		continue;					} /* end of (if cFromKeypad=='W'...) */
+#ifdef ARDUINOBOOTLOADER
 	  if ((cFromKeypad=='E') && !echoMode)			{ /* write data in eeprom at address */
 		upLoadFile(fdSerial,'E');
 		continue;					} /* end of (if cFromKeypad=='F'...) */
 	  if ((cFromKeypad=='S') && !echoMode)			{ /* write data in sram at address */
 		upLoadFile(fdSerial,'S');
 		continue;					} /* end of (if cFromKeypad=='S'...) */
-	    mywrite(fdSerial,&cFromKeypad,1); 			  /* write 1 byte to serial */
+#endif
  				} 			 	  /* end of while(1) */
   			}	 			 /* end of (if (pid=fork() ...) */
   else
@@ -273,7 +275,9 @@ char*	command;
 	      sleep(1);   
 #endif
 #ifdef ARDUINOBOOTLOADER
-	      cout << "name of binary -file for uploading:\t";
+if ((order == 'F')||(order == 'f'))	cout << "name of binary -file for uploading in flash:\t";
+if (order == 'S')	      		cout << "name of file for loading in sram:\t";
+if (order == 'E')	      		cout << "name of file for loading in eeprom:\t";
 #else
 	      cout << "name of cob (bin) -file for uploading:\t";
 #endif
@@ -343,21 +347,21 @@ rewind(file);
 
 #ifdef ARDUINOBOOTLOADER	// take linux int (32 or 64) bit address
 unsigned int address=0;
-if (order != 'w')	{
-    cout << "start address: \n"; cout.flush();
-      while(!(cin >> address))
-  {
+if (order != 'f')	{
     cin.clear();
-    cin.ignore(INT_MAX,'\n');
-  }
+    cout << "\tstart address: "; cout.flush();
+do {
+    i=0;
+    do {cin.get(c); cout << c;cout.flush();fileName[i++]=c;} while (c!=CR);
+}	while  (!sscanf(fileName,"%x",&address));
 }
-
-    cout << "\r\n";
+    cout << "\r\n";cout.flush();
 #ifdef ARDUINOSWRESET
-if (order == 'w') 	{ // only upload flash at address 0 sw reset	
+if (order == 'f') 	{ // only upload flash at address 0 sw reset	
 	resetInExpandedMode(fdSerial);
 	usleep(500000);	}	// adjust it for your arduino board - reset pulse about 3,5 ms
 #endif
+if (order == 'f') order ='F';
 int p;
 for (p=0;p<pages;p++)			{
   c='U';	// write flash start address
