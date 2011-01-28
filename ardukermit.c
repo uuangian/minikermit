@@ -61,6 +61,7 @@
 #include <string.h>
 #include <sys/file.h>
 #include <errno.h>
+#include <limits.h>
 
 using namespace std;
 
@@ -150,12 +151,14 @@ if ((fdSerial=open(MODEMDEVICE,O_RDWR|O_NOCTTY))>0){perror(MODEMDEVICE); exit(-1
 	  if (((cFromKeypad=='q')||(cFromKeypad=='Q')) && !echoMode)	{
 	  	kill(pid,SIGKILL);	/* kill child */
 	      	wait(NULL);
-	      	break;		  
+	      	break;							} // terminate
+	  mywrite(fdSerial,&cFromKeypad,1); 			  /* write 1 byte to serial */
+
 	  if ((cFromKeypad=='w') && !echoMode)			{ /* write data in flash at address 0 */
-		upLoadFile(fdSerial,'F');
+		upLoadFile(fdSerial,'f');
 		continue;					} /* end of (if cFromKeypad=='w'...) */
 	  if ((cFromKeypad=='W') && !echoMode)			{ /* write data in flash at address */
-		upLoadFile(fdSerial,'f');
+		upLoadFile(fdSerial,'F');
 		continue;					} /* end of (if cFromKeypad=='W'...) */
 	  if ((cFromKeypad=='E') && !echoMode)			{ /* write data in eeprom at address */
 		upLoadFile(fdSerial,'E');
@@ -163,7 +166,6 @@ if ((fdSerial=open(MODEMDEVICE,O_RDWR|O_NOCTTY))>0){perror(MODEMDEVICE); exit(-1
 	  if ((cFromKeypad=='S') && !echoMode)			{ /* write data in sram at address */
 		upLoadFile(fdSerial,'S');
 		continue;					} /* end of (if cFromKeypad=='S'...) */
-	  mywrite(fdSerial,&cFromKeypad,1); 			  /* write 1 byte to serial */
  				} 			 	  /* end of while(1) */
   			}	 			 /* end of (if (pid=fork() ...) */
   else
@@ -221,7 +223,10 @@ FILE* 	file;			/* for upload of file*/
 char  	fileName[NAMELENGTH+1];
 char 	c;
 char*	command;
-	      cout << "name of binary -file for uploading:\t";
+if ((order == 'F')||(order == 'f'))	cout << "name of binary -file for uploading in flash:\t";
+if (order == 'S')	      		cout << "name of file for loading in sram:\t";
+if (order == 'E')	      		cout << "name of file for loading in eeprom:\t";
+
 	      cout.flush();
 	      int i;
 	      for (i=0;i<NAMELENGTH;i++) {
@@ -233,11 +238,11 @@ char*	command;
 		cout << c;
 		cout.flush();
 		fileName[i]=c;		}
-	      c=LF;
-	      cout << c;
+//	      c=LF;
+//	      cout << c;
 		fileName[i]='\0';
-		cout.flush();	
-		usleep(100);
+//		cout.flush();	
+//		usleep(100);
 		/* try to open file and send it to serial, abort on error*/
 		if ((file=fopen(fileName,"r")) == NULL)	{
 		    perror(fileName);
@@ -265,19 +270,23 @@ mywrite(fdSerial,&c,1);		// leave bootloading mode
 rewind(file);
 
 unsigned int address=0;		// take linux int (32 or 64) bit address
-if (order != 'w')	{
-    cout << "start address: \n"; cout.flush();
-      while(!(cin >> address))
-  {
-    cin.clear();
-    cin.ignore(INT_MAX,'\n');
-  }
+if (order != 'f')	{
+    cout << "\tstart address: "; cout.flush();
+do {
+    i=0;
+    do {cin.get(c); cout << c;cout.flush();fileName[i++]=c;} while (c!=CR);
+}	while  (!sscanf(fileName,"%x",&address));
 }
-cout << "\r\n";
+
+cout << "\r\n";cout.flush();
+
 #ifdef ARDUINOSWRESET
+if (order == 'f')	{
 resetInExpandedMode(fdSerial);
 usleep(500000);		// adjust it for your arduino board - reset pulse about 3,5 ms
+			}
 #endif
+if (order == 'f') order ='F';
 int p;
 
 for (p=0;p<pages;p++)			{
@@ -297,7 +306,7 @@ c=0x1;
 mywrite(fdSerial,&c,1);		// big endian
 c=0;
 mywrite(fdSerial,&c,1);		// little endian page size in bytes
-c='F';				// i think its so for flash
+c=order;				// flash, eeprom or sram F,E,S
 mywrite(fdSerial,&c,1);
  usleep((1000000*2)/BAUDRATE);
 for (int numByte=0; numByte < 256;numByte++)		{
