@@ -125,14 +125,16 @@ int main(int argc, char * argv[])	{
   if (deviceNumber == 10)	{perror(modem); exit(-1);}
 #else
 if ((fdSerial=open(MODEMDEVICE,O_RDWR|O_NOCTTY))>0){perror(MODEMDEVICE); exit(-1);}
+//DTR is usually enabled automatically whenever you open the serial interface on the workstation
 #endif
   if (flock(fdSerial, LOCK_EX|LOCK_NB) <0)
 	{printf("can't LOCK_EX -> perhaps runs another %s\n",argv[0]);exit(-6);	}
 											 /* Locking routines for 4.3BSD.	*/
-
+setAllOnHigh(fdSerial);
   tcgetattr(fdSerial,&oldTio);	// prepare terminal
   newTio		= oldTio;
   newTio.c_cflag	= BAUDRATE|CS8|CLOCAL|CREAD;
+  //newTio.c_cflag = HUPCL; /* Drop DTR on close */
   newTio.c_iflag	= IGNPAR;
   newTio.c_oflag	= 0;
   newTio.c_lflag	= 0;	/* non canonical mode (char mode)*/ // 1 stop bit ???
@@ -141,6 +143,7 @@ if ((fdSerial=open(MODEMDEVICE,O_RDWR|O_NOCTTY))>0){perror(MODEMDEVICE); exit(-1
   tcflush(fdSerial,TCIFLUSH);
   tcsetattr(fdSerial,TCSANOW,&newTio);
  // I think it makes arduino reset also
+setAllOnHigh(fdSerial);
   WINDOW* mywin = new WINDOW;	/* !ncurses library!*/
   mywin		= initscr();
   refresh();
@@ -185,6 +188,7 @@ if ((fdSerial=open(MODEMDEVICE,O_RDWR|O_NOCTTY))>0){perror(MODEMDEVICE); exit(-1
   endwin();				/* !ncurses library!*/
   if (flock(fdSerial, LOCK_UN|LOCK_NB) <0)	{ printf("can't UNLOCK\n");exit(-6);	}
   close(fdSerial);
+  //Closing a serial port will also usually set the DTR signal low which causes most MODEMs to hang up.
 } /* end of int main(...)*/
 
 
@@ -279,13 +283,14 @@ do {
 }
 
 cout << "\r\n";cout.flush();
-
+/*
 #ifdef ARDUINOSWRESET
 if (order == 'f')	{
 resetInExpandedMode(fdSerial);
 usleep(500000);		// adjust it for your arduino board - reset pulse about 3,5 ms
 			}
 #endif
+*/
 if (order == 'f') order ='F';
 int p;
 
