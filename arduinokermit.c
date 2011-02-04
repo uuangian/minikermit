@@ -23,7 +23,7 @@
 
 /**************************************************************************************************************/
 
-#define	ARDUINOSWRESET		// send sw reset command before bootloading
+//#define	ARDUINOSWRESET		// send sw reset command before bootloading
 
 #define SCANSERIALDEVICES	// test for /dev/ttyUSB0,1,2,..9 or ACM0,1,2,..9
 
@@ -143,7 +143,7 @@ setAllOnHigh(fdSerial);
   tcflush(fdSerial,TCIFLUSH);
   tcsetattr(fdSerial,TCSANOW,&newTio);
  // I think it makes arduino reset also
-setAllOnHigh(fdSerial);
+//setAllOnHigh(fdSerial);
   WINDOW* mywin = new WINDOW;	/* !ncurses library!*/
   mywin		= initscr();
   refresh();
