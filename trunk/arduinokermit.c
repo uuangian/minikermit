@@ -298,18 +298,20 @@ for (p=0;p<pages;p++)			{
   c='U';	// write flash start address
 mywrite(fdSerial,&c,1);
  usleep((1000000*2)/BAUDRATE);
-mywrite(fdSerial,&address,1);		// little endian
-mywrite(fdSerial,(unsigned char*)&address+1,1);	// big endian startaddress is 0000 in words
-address+=0x80;
+ c=address%256;
+mywrite(fdSerial,&c,1);		// little endian
+c=address>>8;
+mywrite(fdSerial,&c,1);	
+address+=(order=='F')?0x80:0x100; // // address, little endian. EEPROM.SRAM in bytes, FLASH in words
 readyNow=false;
 c=' ';
 mywrite(fdSerial,&c,1);
 while (!readyNow)sched_yield();		// wait for 0x14 0x10
-c='d';				// write flash 
+c='d';				// write flash or eeprom or sram 
 mywrite(fdSerial,&c,1);
 c=0x1;
 mywrite(fdSerial,&c,1);		// big endian
-c=0;
+c=0;				// ever 256 bytes or 128 words packets !!!
 mywrite(fdSerial,&c,1);		// little endian page size in bytes
 c=order;				// flash, eeprom or sram F,E,S
 mywrite(fdSerial,&c,1);
@@ -331,8 +333,10 @@ int rest=0;
 if	( bytesInLastPage!=0)		{
 c='U';	// write flash start address
 mywrite(fdSerial,&c,1);
-mywrite(fdSerial,&address,1);		// little endian
-mywrite(fdSerial,((unsigned char*)&address)+1,1);	// big endian startaddress is 0000 in words
+ c=address%256;
+mywrite(fdSerial,&c,1);		// little endian
+c=address>>8;
+mywrite(fdSerial,&c,1);	
 readyNow=false;
 c=' ';
 mywrite(fdSerial,&c,1);
@@ -344,7 +348,7 @@ c=0x01;
 mywrite(fdSerial,&c,1);	// big endian
 c=0;
 mywrite(fdSerial,&c,1);	// little endian page size in bytes
-c='F';	// i think its so for flash
+c=order;	// i think its so for flash
 mywrite(fdSerial,&c,1);
 /* even bytes!!! */
  usleep((1000000*2)/BAUDRATE);
