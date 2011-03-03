@@ -7,11 +7,9 @@ Arduinokermit is presetted for:<br>
 #define MODEMDEVICE 	"/dev/ttyUSB0"<br>
 #define SCANSERIALDEVICES	// test for /dev/ttyUSB0,1,2,..9 or ACM0,1,2,..9<br>
 
-For USB/ACM ports sometimes you have awhile "skeletons in the closet" if you reset your microcontroller board or temporary disconnect the board. Therefore arduinokermit tests successive for USB0, USB1,.... USB9 for a "living" connection port. Remove this code, if you not need this behavior.
+For USB/ACM ports sometimes you have awhile "skeletons in the closet" if you reset your microcontroller board or temporary disconnect the board. Therefore arduinokermit tests successive for USB0, USB1,.... USB9 for a "living" connection port. Remove this code (comment prpeprocessor directive above), if you not need this behavior.
 
 Arduinokermit use the stk500V1 protocol for uploading like the arduinoIDE only.
-
-#define SCANSERIALDEVICES	// test for /dev/ttyUSB0,1,2,..9 or ACM0,1,2,..9
 
 Now compile it:<br>
 #> g++ arduinokermit.c -lncurses -oarduinokermit<br>
