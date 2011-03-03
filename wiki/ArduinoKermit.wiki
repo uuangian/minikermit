@@ -3,10 +3,9 @@
 *Compiling*<br>
 Download and unpack to arduinokermit.c and open a shell. 
 Arduinokermit is presetted for:<br>
-#define BAUDRATE  B57600
-#define MODEMDEVICE 	"/dev/ttyUSB0"
-
-#define SCANSERIALDEVICES	// test for /dev/ttyUSB0,1,2,..9 or ACM0,1,2,..9
+#define BAUDRATE  B57600<br>
+#define MODEMDEVICE 	"/dev/ttyUSB0"<br>
+#define SCANSERIALDEVICES	// test for /dev/ttyUSB0,1,2,..9 or ACM0,1,2,..9<br>
 
 For USB/ACM ports sometimes you have awhile "skeletons in the closet" if you reset your microcontroller board or temporary disconnect the board. Therefore arduinokermit tests successive for USB0, USB1,.... USB9 for a "living" connection port. Remove this code, if you not need this behavior.
 
