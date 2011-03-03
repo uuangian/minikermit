@@ -44,7 +44,7 @@ If this macro is not defined, minikermit support an "own brewed" protocol, which
 
 #define SCANSERIALDEVICES	// test for /dev/ttyUSB0,1,2,..9 or ACM0,1,2,..9<br>
 
-// #define ARDUINORESET   // normmally not uncommented<br>
+// #define ARDUINORESET   // normally not uncommented<br>
 with the 'w'-command the arduino board ist resetted per software und the bootloader upload the bin-file in flash (with arduino/stk500v1-protocol)<br><br>
 *Now compile it !! * <br>
 From the shell prompt type:<br>
