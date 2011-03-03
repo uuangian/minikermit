@@ -38,16 +38,14 @@ Minikermit works with many development boards and monitor programs. It is prepar
 
 // select your target processor or better your board (select only one !!)<br>
 #define ARDUINOBOOTLOADER	// any (avr) arduino board with arduino compatible bootloader<br>
-If this macro is not defined, minikermit support an "own brewed" protocol, which allows to upload more than 64K. 
+If this macro is not defined, minikermit support an "own brewed" protocol, which allows to upload more than 64K.<br>
 // #define CPU68HC11		// 68HC11 development board with monitor<br>
 // #define CPUZ80		// the Z80 development board z80mini with monitor<br>
 
-#define SCANSERIALDEVICES	// test for /dev/ttyUSB0,1,2,..9 or ACM0,1,2,..9
+#define SCANSERIALDEVICES	// test for /dev/ttyUSB0,1,2,..9 or ACM0,1,2,..9<br>
 
-
-// #define ARDUINORESET   // normmally not uncommented
-with the 'w'-command the arduino board ist resetted per software und the bootloader upload the bin-file in flash (with arduino/stk500v1-protocol)
-<br><br>
+// #define ARDUINORESET   // normmally not uncommented<br>
+with the 'w'-command the arduino board ist resetted per software und the bootloader upload the bin-file in flash (with arduino/stk500v1-protocol)<br><br>
 *Now compile it !! * <br>
 From the shell prompt type:<br>
 #> g++ minikermit.c -lncurses -ominikermit<br>
