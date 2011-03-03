@@ -30,7 +30,7 @@ For USB/ACM ports sometimes you have awhile "skeletons in the closet" if you res
 //#define BAUDRATE B115200<br>
 <br><br>
 Minikermit works with many development boards and monitor programs. It is prepared for cooperation with:<br>
-- diverse avr8 and avr32 controllers, which are equipped with the monitor program [http://code.google.com/p/bamo128 bamo128] or bamo32 [http://cs.ba-berlin.de bamo32],<br>
+- diverse avr8 and avr32 controllers, which are equipped with the monitor program [http://code.google.com/p/bamo128 bamo128] or [http://cs.ba-berlin.de bamo32],<br>
 - arduino boards with arduino bootloader (shipped with board)<br>
 - Motorola EVB board with 68HC11 and monitor<br>
 - Z80mini with monitor<br>
