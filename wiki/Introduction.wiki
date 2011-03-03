@@ -1,5 +1,5 @@
-#summary what is minikermit
-Minikermit is a linux terminal program especially for communication with microcontroller development boards with monitors (minimal operating systems) which support serial communication.<br><br>
+#summary what is minikermit, how to compile
+Minikermit is a linux terminal program especially for communication with microcontroller development boards with monitors (minimal operating systems) which support serial communication and upload software/data.<br><br>
 *How it works* <br>
 Connect the development board over a serial communication line with your pc and start minikermit in your shell. Minikermit then waits for key pressed at pc keypad and sends the character over serial line to the development board. Characters, which the development board sends over serial line, are displayed in the minikermit terminal window.<br>
 Minikermit terminates, if you press 'q' or 'Q' at keypad. If you press 'w', minikermit
@@ -17,15 +17,17 @@ Minikermit works with different serial communication ports (ttyi, USBi, ACMi), b
 //#define MODEMDEVICE 	"/dev/ttyUSB1"	/`*`  USB port`*`/<br>
 //#define MODEMDEVICE 	"/dev/ttyS1"	/`*`  second RS232 port`*`/<br>
 
+#define SCANSERIALDEVICES	// test for /dev/ttyUSB0,1,2,..9 or ACM0,1,2,..9
+
 For USB/ACM ports sometimes you have awhile "skeletons in the closet" if you reset your microcontroller board or temporary disconnect the board. Therefore minikermit tests successive for USB0, USB1,.... USB9 for a "living" connection port. Remove this code, if you not need this behavior.
 
 // select your baudrate<br>
-//#define BAUDRATE	B1200<br>
-//#define BAUDRATE	B9600<br>
-//#define BAUDRATE	B19200<br>
-//#define BAUDRATE	B38400<br>
-#define BAUDRATE 	B57600<br> // its the arduino baudrate (mega and duemilanove)
-//#define BAUDRATE	B115200<br>
+//#define BAUDRATE B1200<br>
+//#define BAUDRATE B9600<br>
+//#define BAUDRATE B19200<br>
+//#define BAUDRATE B38400<br>
+#define BAUDRATE  B57600 // its the arduino baudrate (mega and duemilanove)<br>
+//#define BAUDRATE B115200<br>
 <br><br>
 Minikermit works with many development boards and monitor programs. It is prepared for cooperation with:<br>
 - diverse avr8 and avr32 controllers, which are equipped with the monitor program bamo128 (http://code.google.com/p/bamo128) or bamo32 (http://cs.ba-berlin.de),<br>
@@ -34,18 +36,21 @@ Minikermit works with many development boards and monitor programs. It is prepar
 - Z80mini with monitor<br>
 
 // select your target processor or better your board (select only one !!)<br>
-//#define BAMOAVR	 // diverse atmega, xmega, UC3, AP7000 working in cooperation with bamo128 or bamo32<br>
-		// or any processor with bajos code.google.com/p/bajos)
-#define ARDUINOBOOTLOADER	// any (avr) arduino board with arduino bootloader<br>
-//#define CPU68HC11		// 68HC11 development board with monitor<br>
-//#define CPUZ80		// the Z80 development board z80mini with monitor<br>
-#define ARDUINOSTYLE
+#define ARDUINOBOOTLOADER	// any (avr) arduino board with arduino compatible bootloader<br>
+If this macro is not defined, minikermit support an "own brewed" protocol, which allows to upload more than 64K. 
+// #define CPU68HC11		// 68HC11 development board with monitor<br>
+// #define CPUZ80		// the Z80 development board z80mini with monitor<br>
+
+#define SCANSERIALDEVICES	// test for /dev/ttyUSB0,1,2,..9 or ACM0,1,2,..9
+
+
+// #define ARDUINORESET   // normmally not uncommented
 with the 'w'-command the arduino board ist resetted per software und the bootloader upload the bin-file in flash (with arduino/stk500v1-protocol)
 <br><br>
 *Now compile it !! * <br>
 From the shell prompt type:<br>
 #> g++ minikermit.c -lncurses -ominikermit<br>
-compiles minikermit.c and produces the executable file minikermit. Be sure, you have installed the gnu c-development tools (g++) and the ncurses-library before.<br>
+compiles minikermit.c and produces the executable file minikermit. Be sure, you have installed the GNU c-development tools (g++) and the ncurses-library before.<br>
 Connect your pc with the serial cable with your development board and start minikermit from the command line:<br>
 #>./minikermit<br>
 You can communicate now with your development board according to the monitor program.<br>
