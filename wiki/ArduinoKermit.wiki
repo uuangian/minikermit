@@ -15,5 +15,5 @@ Now compile it:<br>
 #> g++ arduinokermit.c -lncurses -oarduinokermit<br>
 compiles arduinokermit.c and produces the executable file arduinokermit. Be sure, you have installed the GNU c-development tools (g++) and the ncurses-library before.<br>
 Connect your pc with the serial cable with your development board and start ardinokermit from the command line:<br>
-#>./minikermit<br>
+#>./arduinokermit<br>
 You can communicate now with your development board according to the monitor program.<br>
