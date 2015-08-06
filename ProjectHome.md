@@ -1,0 +1,1 @@
+a linux terminal program especially for communication with microcontrollers
